@@ -1,3 +1,5 @@
+import { TicketStatus } from "@prisma/client";
+
 export type ApplicationError = {
   name: string;
   message: string;
@@ -29,3 +31,14 @@ export type RequestError = {
   name: string,
   message: string,
 };
+
+export type TicketEntity = {
+    id: number,
+    ticketTypeId: number,
+    enrollmentId: number,
+    status: TicketStatus,
+    createdAt: Date,
+    updatedAt: Date
+}
+
+export type Ticket = Partial<TicketEntity>;
