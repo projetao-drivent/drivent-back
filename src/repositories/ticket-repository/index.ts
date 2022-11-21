@@ -13,7 +13,19 @@ async function findTickets(enrollmentId: number) {
     },
   });
   return ticket;  
-} 
+}
+
+async function findTicketById(ticketId: number) {
+  return prisma.ticket.findFirst({
+    where: {
+      id: ticketId,
+    },
+    include: {
+      Enrollment: true,
+      TicketType: true,
+    },
+  });
+}
 
 async function insertTicket(enrollmentId: number, ticketTypeId: Ticket) {
   return prisma.ticket.create({
@@ -29,8 +41,20 @@ async function insertTicket(enrollmentId: number, ticketTypeId: Ticket) {
   });
 }
 
+async function updateTicketStatus(id: number) {
+  const ticket = prisma.ticket.update({
+    where: {
+      id
+    },
+    data: {
+      status: "PAID",
+    },
+  });
+  return ticket;  
+} 
+
 const ticketRepository = {
-  findTicketTypes, findTickets, insertTicket 
+  findTicketTypes, findTickets, insertTicket, updateTicketStatus, findTicketById 
 };
 
 export default ticketRepository;

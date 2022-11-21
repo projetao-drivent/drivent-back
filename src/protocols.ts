@@ -51,3 +51,23 @@ export type TicketEntity = {
 }
 
 export type Ticket = Partial<TicketEntity>;
+
+export type PaymentEntity = {
+  id: number,
+  ticketId: number,
+  value: number,
+  cardIssuer: string,
+  cardLastDigits: string,
+  createdAt: Date,
+  updatedAt: Date
+}
+
+export type Payment = Partial<PaymentEntity>;
+
+export type CardData = {
+  issuer: string,
+  number: number,
+  name: string,
+  expirationDate: Date,
+  cvv: number
+}

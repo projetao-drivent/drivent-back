@@ -60,3 +60,12 @@ function joiMobilePhoneValidation(value: string, helpers: Joi.CustomHelpers<stri
 export const createTicketSchema = Joi.object<Ticket>({
   ticketTypeId: Joi.number().required(),
 });
+
+export const querySchema = Joi.object({
+  ticketId: Joi.required(),
+});
+
+export const paymentSchema = Joi.object({
+  ticketId: Joi.required(),
+  cardData: Joi.object().required()
+});
