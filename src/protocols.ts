@@ -14,6 +14,7 @@ export type ViaCEPAddress = {
 
 };
 
+//Regra de Negócio
 export type AddressEnrollment = {
   logradouro: string,
   complemento: string,

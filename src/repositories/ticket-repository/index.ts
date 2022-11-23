@@ -1,60 +1,70 @@
 import { prisma } from "@/config";
-import { Ticket } from "@/protocols";
+import { Ticket, TicketStatus } from "@prisma/client";
 
 async function findTicketTypes() {
   return prisma.ticketType.findMany();
 }
 
-async function findTickets(enrollmentId: number) {
-  const ticket = prisma.ticket.findFirst({
-    where: { enrollmentId },
-    include: {
-      TicketType: true,
-    },
-  });
-  return ticket;  
-}
-
-async function findTicketById(ticketId: number) {
+async function findTickeyById(ticketId: number) {
   return prisma.ticket.findFirst({
     where: {
       id: ticketId,
     },
     include: {
       Enrollment: true,
-      TicketType: true,
-    },
+    }
   });
 }
-
-async function insertTicket(enrollmentId: number, ticketTypeId: Ticket) {
-  return prisma.ticket.create({
-    data: {
-      "ticketTypeId": ticketTypeId.ticketTypeId,
-      "enrollmentId": enrollmentId,
-      "status": "RESERVED",
+async function findTickeWithTypeById(ticketId: number) {
+  return prisma.ticket.findFirst({
+    where: {
+      id: ticketId,
     },
     include: {
-      TicketType: true
-    } 
-   
+      TicketType: true,
+    }
   });
 }
 
-async function updateTicketStatus(id: number) {
-  const ticket = prisma.ticket.update({
+async function findTicketByEnrollmentId(enrollmentId: number) {
+  return prisma.ticket.findFirst({
     where: {
-      id
+      enrollmentId,
+    },
+    include: {
+      TicketType: true, //inner join
+    }
+  });
+}
+
+async function createTicket(ticket: CreateTicketParams) {
+  return prisma.ticket.create({
+    data: {
+      ...ticket,
+    }
+  });
+}
+
+async function ticketProcessPayment(ticketId: number) {
+  return prisma.ticket.update({
+    where: {
+      id: ticketId,
     },
     data: {
-      status: "PAID",
-    },
+      status: TicketStatus.PAID,
+    }
   });
-  return ticket;  
-} 
+}
+
+export type CreateTicketParams = Omit<Ticket, "id" | "createdAt" | "updatedAt">
 
 const ticketRepository = {
-  findTicketTypes, findTickets, insertTicket, updateTicketStatus, findTicketById 
+  findTicketTypes,
+  findTicketByEnrollmentId,
+  createTicket,
+  findTickeyById,
+  findTickeWithTypeById,
+  ticketProcessPayment,
 };
 
 export default ticketRepository;

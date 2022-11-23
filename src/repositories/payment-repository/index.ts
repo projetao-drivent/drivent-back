@@ -1,25 +1,28 @@
 import { prisma } from "@/config";
+import { Payment } from "@prisma/client";
 
 async function findPaymentByTicketId(ticketId: number) {
-  const payment = prisma.payment.findFirst({
-    where: { ticketId },
-  });
-  return payment;  
-} 
-
-async function insertPayment(ticketId: number, issuer: string, number: number, value: number) {
-  return prisma.payment.create({
-    data: {
+  return prisma.payment.findFirst({
+    where: {
       ticketId,
-      value,
-      cardIssuer: issuer,
-      cardLastDigits: number.toString().slice(-4),
-    },
+    }
   });
 }
 
+async function createPayment(ticketId: number, params: PaymentParams) {
+  return prisma.payment.create({
+    data: {
+      ticketId,
+      ...params,
+    }
+  });
+}
+
+export type PaymentParams = Omit<Payment, "id" | "createdAt" | "updatedAt">
+
 const paymentRepository = {
-  findPaymentByTicketId, insertPayment
+  findPaymentByTicketId,
+  createPayment,
 };
 
 export default paymentRepository;
