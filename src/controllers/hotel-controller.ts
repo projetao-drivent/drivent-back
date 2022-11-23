@@ -13,3 +13,18 @@ export async function getHotels(req: AuthenticatedRequest, res: Response) {
     }
   }
 }
+
+export async function getAvaliableRooms(req: AuthenticatedRequest, res: Response) {
+  try {
+    const hotelId = Number(req.params.hotelId);
+    if (!hotelId) {
+      return res.sendStatus(httpStatus.BAD_REQUEST);
+    }
+    const result = await hotelService.getAvaliableRooms(hotelId);
+    return res.status(httpStatus.OK).send(result);
+  } catch (error) {
+    if (error.name === "NotFoundError") {
+      return res.sendStatus(httpStatus.NO_CONTENT);
+    }
+  }
+}

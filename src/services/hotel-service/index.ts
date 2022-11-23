@@ -9,8 +9,21 @@ async function getHotels() {
   return hotels;
 }
 
+async function getAvaliableRooms(hotelId: number) {
+  const rooms = await hotelRepository.findRoomsByHotelId(hotelId);
+  if(!rooms || rooms.length === 0) {
+    throw notFoundError();
+  }
+  const availiableRooms = rooms.filter(room => room.Booking.length === 0);
+  if(!availiableRooms) {
+    throw notFoundError();
+  }
+  return availiableRooms;
+}
+
 const hotelService = {
-  getHotels
+  getHotels,
+  getAvaliableRooms
 };
 
 export default hotelService;
