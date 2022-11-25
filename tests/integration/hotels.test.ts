@@ -3,9 +3,10 @@ import { prisma } from "@/config";
 import supertest from "supertest";
 import httpStatus from "http-status";
 import faker from "@faker-js/faker";
-import { createUser } from "../factories";
 import * as jwt from "jsonwebtoken";
 import { cleanDb, generateValidToken } from "../helpers";
+import { createEnrollmentWithAddress, createUser, createTicketType, createTicket, createCustomTicketType } from "../factories";
+import { TicketStatus } from "@prisma/client";
 
 const server = supertest(app);
 
@@ -42,16 +43,48 @@ describe("/GET: hotels", () => {
   }); 
 
   describe("when token is valid", () => {
-    it("should respond with empty array when there are no hotels created", async () => {
-      const token = await generateValidToken();
-  
+    it("should respond with status 402 when ticket status is not PAID", async () => {
+      const user = await createUser();
+      const token = await generateValidToken(user);
+      const enrollment = await createEnrollmentWithAddress(user);
+      const ticketType = await createTicketType();
+      const ticket = await createTicket(enrollment.id, ticketType.id, TicketStatus.RESERVED);
+
       const response = await server.get("/hotels").set("Authorization", `Bearer ${token}`);
-  
-      expect(response.body).toEqual([]);
+
+      expect(response.status).toEqual(httpStatus.PAYMENT_REQUIRED);
+    });
+
+    it("should respond with status 204 when ticket type is remote", async () => {
+      const user = await createUser();
+      const token = await generateValidToken(user);
+      const enrollment = await createEnrollmentWithAddress(user);
+      const ticketType = await createCustomTicketType(true, true);
+      const ticket = await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
+
+      const response = await server.get("/hotels").set("Authorization", `Bearer ${token}`);
+
+      expect(response.status).toEqual(httpStatus.NO_CONTENT);
+    });
+
+    it("should respond with status 204 when ticket does not include hotel", async () => {
+      const user = await createUser();
+      const token = await generateValidToken(user);
+      const enrollment = await createEnrollmentWithAddress(user);
+      const ticketType = await createCustomTicketType(false, false);
+      const ticket = await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
+
+      const response = await server.get("/hotels").set("Authorization", `Bearer ${token}`);
+
+      expect(response.status).toEqual(httpStatus.NO_CONTENT);
     });
 
     it("should respond with status 200 and with existing hotels data", async () => {
-      const token = await generateValidToken();
+      const user = await createUser();
+      const token = await generateValidToken(user);
+      const enrollment = await createEnrollmentWithAddress(user);
+      const ticketType = await createCustomTicketType(false, true);
+      const ticket = await createTicket(enrollment.id, ticketType.id, TicketStatus.PAID);
 
       const hotel = await prisma.hotel.create({
         data: {
@@ -59,7 +92,7 @@ describe("/GET: hotels", () => {
           image: faker.image.imageUrl()
         }
       });
-
+      
       const response = await server.get("/hotels").set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toBe(httpStatus.OK);

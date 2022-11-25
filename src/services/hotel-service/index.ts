@@ -1,7 +1,15 @@
 import { notFoundError, unauthorizedError } from "@/errors";
 import hotelRepository from "@/repositories/hotel-repository";
+import ticketService from "@/services/tickets-service";
 
-async function getHotels() {
+async function getHotels(userId: number) {
+  const ticket = await ticketService.getTicketByUserId(userId);
+  if(ticket.status != "PAID") {
+    throw unauthorizedError();
+  }
+  if(!ticket.TicketType.includesHotel || ticket.TicketType.isRemote) {
+    throw notFoundError();
+  }  
   const hotels = await hotelRepository.findHotels();
   if(!hotels) {
     throw notFoundError();
