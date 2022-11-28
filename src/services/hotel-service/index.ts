@@ -18,15 +18,15 @@ async function getHotels(userId: number) {
 }
 
 async function getAvaliableRooms(hotelId: number) {
+  const hotel = await hotelRepository.findHotelById(hotelId);
+  if(!hotel) {
+    throw notFoundError();
+  }
   const rooms = await hotelRepository.findRoomsByHotelId(hotelId);
-  if(!rooms || rooms.length === 0) {
+  if(!rooms) {
     throw notFoundError();
   }
-  const availiableRooms = rooms.filter(room => room.Booking.length === 0);
-  if(!availiableRooms) {
-    throw notFoundError();
-  }
-  return availiableRooms;
+  return rooms;
 }
 
 const hotelService = {
