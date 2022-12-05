@@ -17,6 +17,9 @@ async function insertBooking(roomId: number, userId: number) {
     data: {
       roomId,
       userId,
+    },
+    include: {
+      Room: true
     }
   });
 }
