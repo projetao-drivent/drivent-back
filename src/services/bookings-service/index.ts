@@ -2,8 +2,6 @@ import { notFoundError, unauthorizedError } from "@/errors";
 import bookingsRepository from "@/repositories/bookings-repository";
 import enrollmentRepository from "@/repositories/enrollment-repository";
 import ticketRepository from "@/repositories/ticket-repository";
-import ticketService from "@/services/tickets-service";
-import { not } from "joi";
 
 async function getBookings(userId: number) {
   const bookings = await bookingsRepository.findBookings(userId);
@@ -19,12 +17,9 @@ async function bookRoom(roomId: number, userId: number) {
     throw unauthorizedError();
   }
   const ticket = await ticketRepository.findTicketByEnrollmentId(enrollment.id);
-  if(!ticket || ticket.status === "RESERVED") {
+  if(!ticket || ticket.status === "RESERVED" || ticket.TicketType.isRemote || !ticket.TicketType.includesHotel) {
     throw unauthorizedError();
   }
-  if(ticket.TicketType.isRemote || !ticket.TicketType.includesHotel) {
-    throw unauthorizedError();
-  }  
   const room = await bookingsRepository.findRoomById(roomId);
   if(!room || !roomId) {
     throw notFoundError();
