@@ -1,7 +1,9 @@
 import { notFoundError, unauthorizedError } from "@/errors";
 import bookingsRepository from "@/repositories/bookings-repository";
 import enrollmentRepository from "@/repositories/enrollment-repository";
+import ticketRepository from "@/repositories/ticket-repository";
 import ticketService from "@/services/tickets-service";
+import { not } from "joi";
 
 async function getBookings(userId: number) {
   const bookings = await bookingsRepository.findBookings(userId);
@@ -12,22 +14,22 @@ async function getBookings(userId: number) {
 }
 
 async function bookRoom(roomId: number, userId: number) {
-  const ticket = await ticketService.getTicketByUserId(userId);
+  const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
+  if (!enrollment) {
+    throw unauthorizedError();
+  }
+  const ticket = await ticketRepository.findTicketByEnrollmentId(enrollment.id);
   if(!ticket || ticket.status === "RESERVED") {
     throw unauthorizedError();
   }
   if(ticket.TicketType.isRemote || !ticket.TicketType.includesHotel) {
     throw unauthorizedError();
-  }
-  const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
-  if (!enrollment) {
-    throw unauthorizedError();
-  }
+  }  
   const room = await bookingsRepository.findRoomById(roomId);
-  if(!room) {
+  if(!room || !roomId) {
     throw notFoundError();
   }
-  if(room.capacity === room.Booking.length) {
+  if(room.capacity <= room.Booking.length) {
     throw unauthorizedError();
   }
   const booking = await bookingsRepository.insertBooking(roomId, userId);
@@ -38,21 +40,22 @@ async function bookRoom(roomId: number, userId: number) {
 }
 
 async function changeBooking(roomId: number, userId: number, bookingId: string) {
-  const enrollment = await enrollmentRepository.findWithAddressByUserId(userId);
-  const bookings = await bookingsRepository.findBookings(userId);
-  if(!bookings || !enrollment) {
-    throw unauthorizedError();
-  }
   const room = await bookingsRepository.findRoomById(roomId);
-  if(!room) {
+  if(!roomId || !room) {
     throw notFoundError();
   }
-  if(room.capacity === room.Booking.length) {
+  if(room.Booking.length >= room.capacity) {
     throw unauthorizedError();
   }
-
-  const changedBooking = await bookingsRepository.updateBooking(Number(bookingId), roomId);
-  return changedBooking.id;
+  const booking = await bookingsRepository.findBookings(userId);
+  if(!booking) {
+    throw unauthorizedError();
+  }
+  if(booking.id !== Number(bookingId)) {
+    throw notFoundError();
+  }
+  const updatedBooking = await bookingsRepository.updateBooking(Number(bookingId), roomId);
+  return updatedBooking.id;
 }
 
 const bookingsService = {
