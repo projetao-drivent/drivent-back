@@ -1,21 +1,18 @@
 import faker from "@faker-js/faker";
+import { Booking } from "@prisma/client";
 import { prisma } from "@/config";
 
-export async function createBooking(userId: number, roomId: number) {
+type CreateBookingParams = {
+  roomId: number,
+  userId: number,
+}
+
+export function createBooking({ roomId, userId }: CreateBookingParams) {
   return prisma.booking.create({
     data: {
       userId,
       roomId,
-      updatedAt: faker.date.recent(),
-      createdAt: faker.date.recent(),
-    },
+    }
   });
 }
 
-export async function findBooking(id: number) {
-  return prisma.booking.findFirst({
-    where: {
-      id,
-    },
-  });
-}
