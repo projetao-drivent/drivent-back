@@ -1,3 +1,4 @@
+import { Ticket } from "@/protocols";
 import { CreateOrUpdateEnrollmentWithAddress } from "@/services/enrollments-service";
 import { getStates, isValidCEP, isValidCPF, isValidMobilePhone } from "@brazilian-utils/brazilian-utils";
 import Joi from "joi";
@@ -56,3 +57,15 @@ function joiMobilePhoneValidation(value: string, helpers: Joi.CustomHelpers<stri
 
   return value;
 }
+export const createTicketSchema = Joi.object<Ticket>({
+  ticketTypeId: Joi.number().required(),
+});
+
+export const querySchema = Joi.object({
+  ticketId: Joi.required(),
+});
+
+export const paymentSchema = Joi.object({
+  ticketId: Joi.required(),
+  cardData: Joi.object().required()
+});

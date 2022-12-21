@@ -13,8 +13,10 @@ export async function usersPost(req: Request, res: Response) {
     });
   } catch (error) {
     if (error.name === "DuplicatedEmailError") {
+      console.log(error);
       return res.status(httpStatus.CONFLICT).send(error);
     }
+    console.log(error);
     return res.status(httpStatus.BAD_REQUEST).send(error);
   }
 }

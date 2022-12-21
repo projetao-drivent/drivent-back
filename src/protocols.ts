@@ -1,3 +1,5 @@
+import { TicketStatus } from "@prisma/client";
+
 export type ApplicationError = {
   name: string;
   message: string;
@@ -23,6 +25,15 @@ export type AddressEnrollment = {
 
 }
 
+export type AddressByCEP = {
+  logradouro: string,
+  complemento: string,
+  bairro: string,
+  cidade: string,
+  uf: string,
+  
+}
+
 export type RequestError = {
   status: number,
   data: object | null,
@@ -30,3 +41,34 @@ export type RequestError = {
   name: string,
   message: string,
 };
+
+export type TicketEntity = {
+    id: number,
+    ticketTypeId: number,
+    enrollmentId: number,
+    status: TicketStatus,
+    createdAt: Date,
+    updatedAt: Date
+}
+
+export type Ticket = Partial<TicketEntity>;
+
+export type PaymentEntity = {
+  id: number,
+  ticketId: number,
+  value: number,
+  cardIssuer: string,
+  cardLastDigits: string,
+  createdAt: Date,
+  updatedAt: Date
+}
+
+export type Payment = Partial<PaymentEntity>;
+
+export type CardData = {
+  issuer: string,
+  number: number,
+  name: string,
+  expirationDate: Date,
+  cvv: number
+}
