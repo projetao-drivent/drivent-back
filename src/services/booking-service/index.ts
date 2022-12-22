@@ -55,14 +55,25 @@ async function changeBookingRoomById(userId: number, roomId: number) {
   return bookingRepository.upsertBooking({
     id: booking.id,
     roomId,
-    userId
+    userId,
   });
+}
+
+async function getBookingsByRoom(roomId: number) {
+  const bookings = await bookingRepository.findByRoomId(roomId);
+
+  if (!bookings) {
+    throw notFoundError();
+  }
+
+  return bookings;
 }
 
 const bookingService = {
   bookingRoomById,
   getBooking,
   changeBookingRoomById,
+  getBookingsByRoom,
 };
 
 export default bookingService;
