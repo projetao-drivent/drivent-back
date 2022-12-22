@@ -68,3 +68,12 @@ export async function changeBooking(req: AuthenticatedRequest, res: Response) {
   }
 }
 
+export async function listBookingsByRoom(req: AuthenticatedRequest, res: Response) {
+  try {
+    const roomId = Number(req.params.roomId);
+    const bookings = await bookingService.getBookingsByRoom(roomId);
+    return res.status(httpStatus.OK).send(bookings);
+  } catch (error) {
+    return res.sendStatus(httpStatus.NOT_FOUND);
+  }
+}
